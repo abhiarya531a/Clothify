@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tata Hitachi | MPS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+:root {
+  --primary: #f46f22;
+  --primary-dark: #d85f1d;
+  --bg: #f4f6f8;
+  --card-bg: #ffffff;
+  --text-dark: #1f2937;
+  --text-muted: #6b7280;
+  --danger: #ff3b3b;
+  --radius: 12px;
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.08);
+  --shadow-hover: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #eef1f5, #f8fafc);
+  color: var(--text-dark);
+  min-height: 100vh;
+}
+
+/* ================= HEADER ================= */
+header {
+  background: linear-gradient(135deg, #f46f22, #ff8a3d);
+  color: white;
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+header img {
+  height: 46px;
+  background: white;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+.logout {
+  background:#f46f22;
+  color:#fff;
+  border:none;
+  padding:8px 14px;
+  margin-left:10px;
+  border-radius:6px;
+  cursor:pointer;
+  transition: all 0.25s ease;
+}
+
+.logout:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(244,111,34,0.4);
+}
+
+header .logout {
+  margin-left: auto;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  backdrop-filter: blur(6px);
+  border-radius: 10px;
+  padding: 8px 16px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+header .logout:hover {
+  background: white;
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+/* ================= CARDS ================= */
+.card,
+.cardlogin {
+  background: var(--card-bg);
+  margin: 24px;
+  padding: 24px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  transition: all 0.35s ease;
+}
+
+.card:hover,
+.cardlogin:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+
+.cardlogin {
+  max-width: 420px;
+  margin: 60px auto;
+}
+
+/* ================= HEADINGS ================= */
+h2 {
+  margin-top: 0;
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+/* ================= INPUTS ================= */
+input,
+select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 8px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+  transition: all 0.25s ease;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(244,111,34,0.25);
+}
+
+/* ================= BUTTONS ================= */
+button {
+  padding: 10px 18px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(244,111,34,0.45);
+}
+
+/* ================= TABLE ================= */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+thead {
+  background: #eef2f7;
+}
+
+th,
+td {
+  padding: 12px 10px;
+  font-size: 13px;
+  text-align: center;
+}
+
+th {
+  font-weight: 700;
+  color: #374151;
+}
+
+tbody tr {
+  transition: background 0.25s ease;
+}
+
+tbody tr:hover {
+  background: #f9fafb;
+}
+
+.stock-edit {
+  width: 80px;
+  text-align: center;
+}
+
+/* ================= SHORTAGE PANEL ================= */
+.shortage {
+  background: linear-gradient(135deg, #fff1f1, #ffe5e5);
+  border-left: 6px solid var(--danger);
+  position: sticky;
+  top: 80px;
+}
+
+.shortage h2 {
+  color: var(--danger);
+}
+
+.net-positive {
+  background: #fff1f1;
+  font-weight: 600;
+}
+
+
+#shortageList li {
+  padding: 6px 0;
+  font-weight: 600;
+  color: #991b1b;
+}
+
+/* ================= TIMESTAMP ================= */
+.timestamp {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #ff7a18, #ff9f43);
+  color: #fff;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.brand img {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions button {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: rgba(255,255,255,0.25);
+}
+.section {
+  background: #fff;
+  margin: 16px;
+  padding: 16px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+th, td {
+  padding: 10px;
+  text-align: center;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.form-row input,
+.form-row select,
+.form-row button {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px;
+  border-radius: 10px;
+}
+.assignment-panel {
+  display: none;
+}
+
+.assignment-panel.active {
+  display: block;
+}
+.assignment-panel button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* ===== RESPONSIVE HEADER ===== */
+@media (max-width: 1023px) {
+  .topbar {
+    padding: 10px 14px;
+  }
+
+  .brand h1 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 767px) {
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .brand {
+    justify-content: center;
+  }
+
+  .brand h1 {
+    font-size: 15px;
+    text-align: center;
+  }
+
+  .nav-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .nav-btn {
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 14px;
+  }
+}
+@media (max-width: 768px) {
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .actions button {
+    flex: 1;
+    text-align: center;
+  }
+
+  .brand span {
+    font-size: 16px;
+  }
+
+  .section {
+    margin: 10px;
+    padding: 14px;
+  }
+}
+
+
+/* ================= ANIMATIONS ================= */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#dashboard,
+.card,
+.cardlogin {
+  animation: fadeIn 0.6s ease forwards;
+}
+#dashboard { display:none; }
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjWhAz74kCgi_MRzYwPyIdnGy0OIBZSTuhQg&" alt="Tata Hitachi">
+    <span>Tata Hitachi – Material Preparation Shop</span>
+  </div>
+
+  <div class="actions">
+    <button id="assignBtn" onclick="openAssignment()">📋 Assignments</button>
+    <button id="exportBtn" onclick="exportExcel()">📥 Export</button>
+    <button id="logoutBtn" onclick="clearSession()">Logout</button>
+  </div>
+</header>
+
+
+<div class="cardlogin" id="loginCard">
+<h2>Admin Login</h2>
+<input id="uid" placeholder="User ID"><br>
+<input id="pwd" type="password" placeholder="Password"><br><br>
+<button onclick="login()">Login</button>
+<p id="loginError" style="color:red;"></p>
+</div>
+<div id="assignmentTab" style="display:none;" class="card">
+  <h2>🧑‍🏭 Daily Assignment Register</h2>
+
+  <label>Date</label><br>
+  <input type="date" id="assignDate"><br><br>
+
+  <div class="card" style="background:#f9fafc">
+    <input id="empName" placeholder="Employee Name">
+    <select id="empShift">
+      <option value="A">Shift A</option>
+      <option value="B">Shift B</option>
+      <option value="C">Shift C</option>
+      <option value="G">Shift G</option>
+    </select>
+    <input id="empAssigned" placeholder="Assigned To">
+    <input id="empNote" placeholder="Additional Note">
+    <br><br>
+    <button onclick="addEmployee()">➕ Add Employee</button>
+  </div>
+  <div class="table-wrap">
+  <table style="margin-top:15px;">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Shift</th>
+        <th>Assigned To</th>
+        <th>Note</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="employeeList"></tbody>
+  </table>
+  </div>
+  <div style="text-align:right;margin-top:10px;font-size:12px;color:#666;">
+    <span id="assignTime"></span>
+  </div>
+
+  <button onclick="backToDashboard()" style="margin-top:15px;">⬅ Back</button>
+</div>
+<div id="dashboard">
+<div class="card">
+<h2>Production Planning</h2>
+<label>Mother Part</label><br>
+<select id="vehicleSelect" onchange="onVehicleChange()"></select><br><br>
+<label>Quantity</label><br>
+<input type="number" id="quantity" min="1" value="1"
+       onchange="saveQuantityAndUpdate()">
+
+</div>
+<div class="card">
+<h2>Raw Materials Requirement</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Part No</th>
+<th>Required Quantity</th>
+<th>Size</th>
+<th>Existing Stock</th>
+<th>Last Refreshed</th>
+</tr>
+</thead>
+<tbody id="materialTable"></tbody>
+</table>
+</div>
+<div class="timestamp" id="stockTime"></div>
+</div>
+
+<div class="card shortage">
+<h2 style="color: #ff0000;">⚠ Shortage Panel</h2>
+<ul id="shortageList"></ul>
+</div>
+
+</div>
+
+<!-- CryptoJS for password hashing -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+
+<script>
+/* ================= FIREBASE INIT ================= */
+firebase.initializeApp({
+  apiKey: "AIzaSyAtjr3Pybsbrm0sdLcWJkYisHRmYaRrWG4",
+  authDomain: "letschat-bdc00.firebaseapp.com",
+  projectId: "letschat-bdc00"
+});
+const db = firebase.firestore();
+/* ================= DOM ELEMENTS ================= */
+function setSession(username) {
+  localStorage.setItem("mps_loggedIn", "true");
+  localStorage.setItem("mps_user", username);
+}
+
+function clearSession() {
+  localStorage.removeItem("mps_loggedIn");
+  localStorage.removeItem("mps_user");
+  assignBtn.style.display = "none";
+  location.reload();
+}
+
+function checkSession() {
+  if (localStorage.getItem("mps_loggedIn") === "true") {
+    loginCard.style.display = "none";
+    dashboard.style.display = "block";
+    exportBtn.style.display = "inline-block";
+    logoutBtn.style.display = "inline-block";
+    loadVehicles();
+  }
+}
+
+function exportExcel() {
+  if (typeof XLSX === "undefined") {
+    alert("Excel library failed to load. Refresh once.");
+    return;
+  }
+
+  const vehicleSelect = document.getElementById("vehicleSelect");
+  const vehicleName =
+    vehicleSelect.options[vehicleSelect.selectedIndex]?.text || "Unknown Vehicle";
+
+  const quantity = Number(document.getElementById("quantity").value || 1);
+  const exportTime = new Date().toLocaleString();
+
+  const header = [
+    "Mother Part",
+    "Planned Qty",
+    "Part No",
+    "Required Qty",
+    "Existing Stock",
+    "Net Required",
+    "Size",
+    "Exported At"
+  ];
+
+  const allRows = [header];
+  const shortageRows = [header];
+
+  document.querySelectorAll("#materialTable tr").forEach(tr => {
+    const tds = tr.querySelectorAll("td");
+    if (tds.length < 4) return;
+
+    const partNo = tds[0].innerText.trim();
+    const required = Number(tds[1].innerText.trim());
+    const size = tds[2].innerText.trim();
+    const stock = Number(tds[3].querySelector("input")?.value || 0);
+    const net = Math.max(required - stock, 0);
+
+    const row = [
+      vehicleName,
+      quantity,
+      partNo,
+      required,
+      stock,
+      net,
+      size,
+      exportTime
+    ];
+
+    allRows.push(row);
+    if (net > 0) shortageRows.push(row);
+  });
+
+  if (allRows.length === 1) {
+    alert("No data to export");
+    return;
+  }
+
+  const wb = XLSX.utils.book_new();
+  const wsAll = XLSX.utils.aoa_to_sheet(allRows);
+  const wsShort = XLSX.utils.aoa_to_sheet(shortageRows);
+
+  styleSheet(wsAll, allRows);
+  styleSheet(wsShort, shortageRows);
+
+  XLSX.utils.book_append_sheet(wb, wsAll, "Material Plan");
+  XLSX.utils.book_append_sheet(wb, wsShort, "Shortage Only");
+
+  const fileName =
+    vehicleName.replace(/[^a-z0-9]/gi, "_") + "_MPS.xlsx";
+
+  XLSX.writeFile(wb, fileName);
+}
+
+/* ================= EXCEL STYLING ================= */
+function styleSheet(ws, rows) {
+  const colWidths = [];
+
+  rows.forEach((row, r) => {
+    row.forEach((cell, c) => {
+      const ref = XLSX.utils.encode_cell({ r, c });
+      if (!ws[ref]) return;
+
+      if (r === 0) {
+        ws[ref].s = {
+          font: { bold: true },
+          alignment: { horizontal: "center" },
+          fill: { fgColor: { rgb: "EDEDED" } }
+        };
+      }
+
+      if (r > 0 && c === 5 && Number(cell) > 0) {
+        ws[ref].s = {
+          fill: { fgColor: { rgb: "FFD6D6" } },
+          font: { bold: true, color: { rgb: "9C0006" } }
+        };
+      }
+
+      colWidths[c] = Math.max(colWidths[c] || 10, String(cell).length + 4);
+    });
+  });
+
+  ws["!cols"] = colWidths.map(w => ({ wch: w }));
+}
+
+/* ================= GLOBAL STATE ================= */
+let vehicles = {};
+let stock = {};
+let savedQuantities = {};
+let saveTimer = null;
+
+
+/* ================= LOGIN ================= */
+async function login() {
+  loginError.innerText = "";
+
+  const username = uid.value.trim().toUpperCase();
+  const password = pwd.value.trim();
+
+  const doc = await db.collection("admins").doc(username).get();
+  if (!doc.exists) return loginError.innerText = "Invalid credentials";
+
+  const admin = doc.data();
+  const enteredHash = CryptoJS.MD5(password).toString();
+
+  if (!admin.active || admin.passwordHash !== enteredHash) {
+    return loginError.innerText = "Invalid credentials";
+  }
+
+  setSession(username);
+
+  loginCard.style.display = "none";
+  dashboard.style.display = "block";
+  assignBtn.style.display = "inline-block";
+  exportBtn.style.display = "inline-block";
+  logoutBtn.style.display = "inline-block";
+
+  loadVehicles();
+}
+
+/* ================= LOAD DATA ================= */
+async function loadVehicles() {
+  vehicleSelect.innerHTML = "";
+
+  const vSnap = await db.collection("vehicles").get();
+  vSnap.forEach(doc => {
+    vehicles[doc.id] = doc.data();
+    vehicleSelect.innerHTML +=
+      `<option value="${doc.id}">${doc.data().name}</option>`;
+  });
+
+  const sDoc = await db.collection("stock").doc("materials").get();
+  if (sDoc.exists) stock = sDoc.data();
+
+  const qDoc = await db.collection("config").doc("productionPlan").get();
+  if (qDoc.exists) savedQuantities = qDoc.data();
+
+  vehicleSelect.selectedIndex = 0;
+  onVehicleChange();
+}
+
+function formatDateTime(date = new Date()) {
+  const d = String(date.getDate()).padStart(2, "0");
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const y = date.getFullYear();
+
+  let h = date.getHours();
+  const min = String(date.getMinutes()).padStart(2, "0");
+  const sec = String(date.getSeconds()).padStart(2, "0");
+
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+
+  return `${d}/${m}/${y}, ${h}:${min}:${sec} ${ampm}`;
+}
+
+/* ================= VEHICLE CHANGE ================= */
+function onVehicleChange() {
+  const id = vehicleSelect.value;
+  quantity.value = savedQuantities[id] || 1;
+  updateMaterials();
+}
+
+/* ================= AUTO SAVE QUANTITY ================= */
+quantity.addEventListener("input", () => {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveQuantityAndUpdate, 400);
+});
+
+async function saveQuantityAndUpdate() {
+  const id = vehicleSelect.value;
+  const qty = Math.max(1, Number(quantity.value) || 1);
+
+  quantity.value = qty;
+  savedQuantities[id] = qty;
+
+  updateMaterials();
+
+  await db.collection("config")
+    .doc("productionPlan")
+    .set({ [id]: qty }, { merge: true });
+}
+
+/* ================= UPDATE MATERIALS ================= */
+function updateMaterials() {
+  if (!vehicleSelect.value) return;
+
+  materialTable.innerHTML = "";
+  shortageList.innerHTML = "";
+
+  const vehicle = vehicles[vehicleSelect.value];
+  const multiplier = Number(quantity.value);
+
+  vehicle.parts.forEach(p => {
+    const required = p.qty * multiplier;
+    const available = stock[p.partNo]?.qty || 0;
+    const net = Math.max(required - available, 0);
+
+    materialTable.innerHTML += `
+      <tr>
+        <td>${p.partNo}</td>
+        <td>${net}</td>
+        <td>${p.size}</td>
+        <td>
+          <input class="stock-edit" type="number" min="0"
+            value="${available}"
+            onchange="saveStock('${p.partNo}', this.value)">
+        </td>
+        <td>${stock[p.partNo]?.updatedAt || "—"}</td>
+      </tr>
+    `;
+
+    if (available < p.qty * 2) {
+      shortageList.innerHTML +=
+        `<li>${p.partNo} – Less than 2 vehicle stock</li>`;
+    }
+  });
+}
+/* ================= ASSIGNMENT TAB ================= */
+
+function openAssignment() {
+  dashboard.style.display = "none";
+  assignmentTab.style.display = "block";
+
+  const today = new Date().toISOString().split("T")[0];
+  assignDate.value = today;
+  loadAssignments(today);
+}
+
+function backToDashboard() {
+  assignmentTab.style.display = "none";
+  dashboard.style.display = "block";
+}
+
+assignDate.onchange = () => loadAssignments(assignDate.value);
+
+function isPastDate(date) {
+  const today = new Date().toISOString().split("T")[0];
+  return date < today;
+}
+
+/* ================= ADD EMPLOYEE ================= */
+
+async function addEmployee() {
+  const date = assignDate.value;
+  if (isPastDate(date)) {
+    alert("Past dates are locked");
+    return;
+  }
+
+  const entry = {
+    name: empName.value.trim(),
+    shift: empShift.value,
+    assignedTo: empAssigned.value.trim(),
+    note: empNote.value.trim()
+  };
+
+  if (!entry.name || !entry.assignedTo) {
+    alert("Name & Assigned To required");
+    return;
+  }
+
+  const ref = db.collection("assignments").doc(date);
+  const snap = await ref.get();
+
+  let employees = [];
+  if (snap.exists) {
+    employees = snap.data().employees || [];
+  }
+
+  employees.push(entry);
+
+  await ref.set({
+    date,
+    employees,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+
+  empName.value = "";
+  empAssigned.value = "";
+  empNote.value = "";
+
+  loadAssignments(date);
+}
+
+
+/* ================= LOAD ================= */
+
+async function loadAssignments(date) {
+  employeeList.innerHTML = "";
+  assignTime.innerText = "";
+
+  const past = isPastDate(date);
+
+  empName.disabled =
+    empShift.disabled =
+    empAssigned.disabled =
+    empNote.disabled =
+    document.querySelector("button[onclick='addEmployee()']").disabled = past;
+
+  const snap = await db.collection("assignments").doc(date).get();
+  if (!snap.exists) return;
+
+  const data = snap.data();
+  const employees = data.employees || [];
+
+  employees.forEach((e, index) => {
+    employeeList.innerHTML += `
+      <tr>
+        <td>${e.name}</td>
+        <td>${e.shift}</td>
+        <td>${e.assignedTo}</td>
+        <td>${e.note || ""}</td>
+        <td>
+          ${
+            past
+              ? `<span style="color:#888;">Locked</span>`
+              : `
+                <button onclick="editEmployee('${date}', ${index})">✏️</button>
+                <button onclick="deleteEmployee('${date}', ${index})">🗑</button>
+              `
+          }
+        </td>
+      </tr>`;
+  });
+
+  assignTime.innerText =
+    "Loaded on: " + new Date().toLocaleString();
+}
+
+/* ================= EDIT ================= */
+
+async function editEmployee(date, index) {
+  if (isPastDate(date)) return alert("Past date locked");
+
+  const ref = db.collection("assignments").doc(date);
+  const snap = await ref.get();
+  if (!snap.exists) return;
+
+  const employees = snap.data().employees;
+  const e = employees[index];
+
+  const name = prompt("Employee Name:", e.name);
+  if (!name) return;
+
+  const shift = prompt("Shift (A/B/C/G):", e.shift);
+  const assignedTo = prompt("Assigned To:", e.assignedTo);
+  const note = prompt("Note:", e.note || "");
+
+  employees[index] = { name, shift, assignedTo, note };
+
+  await ref.update({
+    employees,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  loadAssignments(date);
+}
+
+
+/* ================= DELETE ================= */
+
+async function deleteEmployee(date, index) {
+  if (isPastDate(date)) return alert("Past date locked");
+  if (!confirm("Delete this employee assignment?")) return;
+
+  const ref = db.collection("assignments").doc(date);
+  const snap = await ref.get();
+  if (!snap.exists) return;
+
+  const employees = snap.data().employees;
+  employees.splice(index, 1);
+
+  await ref.update({
+    employees,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  loadAssignments(date);
+}
+
+
+/* ================= SAVE STOCK ================= */
+async function saveStock(partNo, value) {
+  stock[partNo] = {
+    qty: Number(value),
+    updatedAt: formatDateTime()
+  };
+
+  await db.collection("stock")
+    .doc("materials")
+    .set({ [partNo]: stock[partNo] }, { merge: true });
+
+  updateMaterials();
+}
+window.onload = () => {
+  checkSession();
+};
+
+</script>
+</body>
+</html>
